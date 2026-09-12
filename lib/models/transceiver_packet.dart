@@ -5,7 +5,8 @@ enum PacketType {
   speechText(1),
   pttStart(2),
   pttEnd(3),
-  heartbeat(4);
+  heartbeat(4),
+  alert(5);
 
   final int code;
   const PacketType(this.code);

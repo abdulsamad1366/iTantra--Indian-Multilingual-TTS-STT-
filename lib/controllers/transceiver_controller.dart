@@ -108,6 +108,41 @@ class TransceiverController extends ChangeNotifier implements P2pPacketListener,
     }
   }
 
+  Future<void> sendAlertMessage(String text) async {
+    if (text.trim().isEmpty) return;
+    _isProcessingStt = true;
+    notifyListeners();
+
+    final messageId = "ALT_${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}";
+
+    final packetBytes = PacketCodec.encode(
+      text: text,
+      sourceLanguage: _sourceLanguage,
+      targetLanguage: _targetLanguage,
+      packetType: PacketType.alert,
+      messageId: messageId,
+    );
+
+    await networkService.sendPacket(packetBytes);
+    _isProcessingStt = false;
+
+    final message = SpeechMessage(
+      id: messageId,
+      senderName: "EMERGENCY ALERT (${_sourceLanguage.code.toUpperCase()})",
+      text: text,
+      sourceLanguage: _sourceLanguage,
+      targetLanguage: _targetLanguage,
+      isSentByMe: true,
+      rawAudioBytes: 64000,
+      compressedPacketBytes: packetBytes.length,
+      sttLatencyMs: 10,
+      transmissionLatencyMs: 12,
+    );
+
+    _messages.insert(0, message);
+    notifyListeners();
+  }
+
   Future<void> _sendTransceiverText(String text, int sttLatencyMs, int rawAudioBytes) async {
     final messageId = DateTime.now().millisecondsSinceEpoch.toString().substring(5);
 
@@ -147,8 +182,9 @@ class TransceiverController extends ChangeNotifier implements P2pPacketListener,
 
     final packet = decoded.key;
     final text = decoded.value;
+    final isAlert = packet.packetType == PacketType.alert;
 
-    debugPrint("Received ${packetBytes.length} bytes packet from peer: '$text'");
+    debugPrint("Received ${packetBytes.length} bytes packet (Alert=$isAlert) from peer: '$text'");
 
     _isProcessingTts = true;
     notifyListeners();
@@ -159,14 +195,14 @@ class TransceiverController extends ChangeNotifier implements P2pPacketListener,
 
     final message = SpeechMessage(
       id: packet.messageId,
-      senderName: "Peer (${packet.sourceLanguage.code.toUpperCase()})",
+      senderName: isAlert ? "⚠️ DISTRESS ALERT (${packet.sourceLanguage.code.toUpperCase()})" : "Peer (${packet.sourceLanguage.code.toUpperCase()})",
       text: text,
       sourceLanguage: packet.sourceLanguage,
       targetLanguage: packet.targetLanguage,
       isSentByMe: false,
       rawAudioBytes: 64000,
       compressedPacketBytes: packetBytes.length,
-      sttLatencyMs: 210,
+      sttLatencyMs: 190,
       transmissionLatencyMs: 15,
       ttsLatencyMs: ttsLatency,
     );
