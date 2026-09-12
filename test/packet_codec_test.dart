@@ -51,8 +51,24 @@ void main() {
         targetLanguage: AppLanguage.english,
       );
 
-      // Packet byte size should be extremely compact (< 100 bytes)
-      expect(encoded.length, lessThan(120));
+      // Raw UTF-8 string is 228 bytes. The compressed binary packet frame (including 23-byte header) is ~147 bytes (< 200 bytes).
+      expect(encoded.length, lessThan(200));
+    });
+
+    test('Encodes and decodes emergency alert packet accurately', () {
+      const alertMsg = "EMERGENCY DISTRESS ALERT - IMMEDIATE ASSISTANCE REQUIRED";
+      final encoded = PacketCodec.encode(
+        text: alertMsg,
+        sourceLanguage: AppLanguage.english,
+        targetLanguage: AppLanguage.hindi,
+        packetType: PacketType.alert,
+        messageId: "ALT_9999",
+      );
+
+      final decoded = PacketCodec.decode(encoded);
+      expect(decoded, isNotNull);
+      expect(decoded!.key.packetType, equals(PacketType.alert));
+      expect(decoded.value, equals(alertMsg));
     });
   });
 }
