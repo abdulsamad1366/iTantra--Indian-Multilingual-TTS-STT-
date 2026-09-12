@@ -223,21 +223,25 @@ class TransceiverScreen extends StatelessWidget {
 
   Widget _buildEmptyState() {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.record_voice_over, size: 48, color: AppTheme.textSecondary.withOpacity(0.4)),
-          const SizedBox(height: 12),
-          const Text(
-            "Press & Hold Push to Talk to Communicate",
-            style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
-          ),
-          const SizedBox(height: 4),
-          const Text(
-            "Audio is processed 100% offline & transmitted as compressed text",
-            style: TextStyle(color: AppTheme.textSecondary, fontSize: 11),
-          ),
-        ],
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.record_voice_over, size: 48, color: AppTheme.textSecondary.withOpacity(0.4)),
+            const SizedBox(height: 12),
+            const Text(
+              "Press & Hold Push to Talk to Communicate",
+              textAlign: TextAlign.center,
+              style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              "Audio is processed 100% offline & transmitted as compressed text",
+              textAlign: TextAlign.center,
+              style: TextStyle(color: AppTheme.textSecondary, fontSize: 11),
+            ),
+          ],
+        ),
       ),
     );
   }
